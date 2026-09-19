@@ -59,13 +59,13 @@ public class Login {
     boolean hasCountryCode = userCellphone.startsWith("+27");
     boolean hasCorrectLength = userCellphone.length() == 12;
 
-    // Check if every character after the '+' is a number. 
+    // Check if every character after the '+' is a number without plus. 
     boolean digitsOnly = true;
     for (int i = 1; i < userCellphone.length(); i++) {
         char c = userCellphone.charAt(i);
         if (!Character.isDigit(c)) {
             digitsOnly = false;
-            break;
+            break; 
         }
     }
 
