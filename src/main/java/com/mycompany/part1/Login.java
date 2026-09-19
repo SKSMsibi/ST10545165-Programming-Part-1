@@ -9,6 +9,17 @@ package com.mycompany.part1;
  * @author Sandile Msibi ROG
  */
 public class Login {
+    private String registeredUserName;
+    private String registeredPassword;
+    
+    public void setRegistrationDetails(String userName, String userPassword) {
+       registeredUserName = userName;
+       registeredPassword = userPassword;
+        
+        
+    }
+   
+    
     public boolean checkUserName(String userName) 
     {
         //Check is the user name contain an under score and not more than five characters
@@ -72,28 +83,52 @@ public class Login {
     return hasCountryCode && hasCorrectLength && digitsOnly;
     }
     
-    public String registerUser () 
+    public String registerUser (String userName, String userPassword) 
     
     { 
+        //Return the necessary registration messaging 
         String registrationMessage;
-        registrationMessage = "Sandile";
-        return registrationMessage;
+
+    boolean isUsernameValid = checkUserName(userName);
+    boolean isPasswordValid = checkPasswordComplexity(userPassword);
+
+    if (isUsernameValid==false) {
+        registrationMessage = "The username is incorrectly formatted.";
+    } else if (isPasswordValid==false) {
+        registrationMessage = "The password does not meet the complexity requirements.";
+    } else {
+        registrationMessage = "The user has been registered successfully.";
+    }
+
+    return registrationMessage;
         
         
     }
     
-    public boolean loginUser()
     
+    public boolean loginUser(String enteredUserName, String enteredPassword) 
     {
-    boolean result = false;
-        return result;
+    //This method verifies that the login details entered match the login details stored when the user registers.
+        if (enteredUserName == null || enteredPassword == null) {
+        return false;
     }
+
+    boolean isUserNameMatch = enteredUserName.equals(registeredUserName);
+    boolean isPasswordMatch = enteredPassword.equals(registeredPassword);
+
+    return isUserNameMatch && isPasswordMatch;
+}
     
-    public String returnLoginStatus()
-    {
-        String loginStatus;
-        loginStatus = "Sandile";
-        return loginStatus;
+    
+    
+    
+    public String returnLoginStatus(boolean loginStatus)
+    { 
+       if (loginStatus==true) {
+        return "A successful login!";
+    } else {
+        return "A failed login! Username or password incorrect, please try again.";
+    }
     }
     
     
