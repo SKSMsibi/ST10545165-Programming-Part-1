@@ -89,4 +89,42 @@ public class MessageTest {
         String result = message.sentMessage(3); // Fixed to lowercase s
         assertEquals("Message successfully stored.", result);
     }
+    
+    // Part 3 TESTSSSS 
+    @Test
+    public void testLongestStoredMessage() {
+        // Test Data matching specification
+        Message m1 = new Message("001", 1, "+27834557896", "Did you get the cake?");
+        Message m2 = new Message("002", 2, "+27838884567", "Where are you? You are late! I have asked you to be on time.");
+        
+        // Populate test environment
+        m1.classifyAndStore(1);
+        m2.classifyAndStore(3);
+        
+        String longest = Message.getLongestStoredMessage();
+        assertEquals("Where are you? You are late! I have asked you to be on time.", longest);
+    }
+
+    @Test
+    public void testSearchByRecipient() {
+        Message m2 = new Message("002", 2, "+27838884567", "Where are you? You are late! I have asked you to be on time.");
+        Message m5 = new Message("005", 5, "+27838884567", "Ok, I am leaving without you.");
+        m2.classifyAndStore(3);
+        m5.classifyAndStore(3);
+
+        String results = Message.searchByRecipient("+27838884567");
+        assertTrue(results.contains("Where are you? You are late! I have asked you to be on time."));
+        assertTrue(results.contains("Ok, I am leaving without you."));
+    }
+
+    @Test
+    public void testDeleteMessageByHash() {
+        Message m2 = new Message("002", 2, "+27838884567", "Where are you? You are late! I have asked you to be on time.");
+        m2.createMessageHash();
+        m2.classifyAndStore(3);
+        
+        String hash = m2.getMessageHash();
+        boolean deleted = Message.deleteMessageByHash(hash);
+        assertTrue(deleted, "Message should be successfully deleted by hash.");
+    }
 }

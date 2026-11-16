@@ -234,7 +234,7 @@ public class Message {
         }
     }
 
-    // 2a. Display sender and recipient of all stored messages
+    // Display sender and recipient of all stored messages
     public static String displayStoredSenderAndRecipient() {
         loadStoredMessagesFromJson();
         if (storedMessagesList.isEmpty()) {
@@ -248,7 +248,7 @@ public class Message {
         return sb.toString();
     }
 
-    // 2b. Display the longest stored message
+    //  Display the longest stored message
     public static String getLongestStoredMessage() {
         loadStoredMessagesFromJson();
         if (storedMessagesList.isEmpty()) {
@@ -274,7 +274,7 @@ public class Message {
         return longest.getMessageText();
     }
 
-    // 2c. Search for a message ID and display corresponding recipient and message
+    //  Search for a message ID and display corresponding recipient and message
     public static String searchMessageID(String searchID) {
         loadStoredMessagesFromJson();
         List<Message> all = new ArrayList<>();
@@ -289,7 +289,7 @@ public class Message {
         return "Message ID not found.";
     }
 
-    // 2d. Search for all messages stored for a particular recipient
+    //  Search for all messages stored for a particular recipient
     public static String searchByRecipient(String recipient) {
         loadStoredMessagesFromJson();
         List<Message> all = new ArrayList<>();
@@ -307,14 +307,14 @@ public class Message {
         return found ? sb.toString().trim() : "No messages found for this recipient.";
     }
 
-    // 2e. Delete a message using the message hash
+    // Delete a message using the message hash
     public static boolean deleteMessageByHash(String hash) {
         boolean removed = sentMessagesList.removeIf(m -> m.getMessageHash() != null && m.getMessageHash().equalsIgnoreCase(hash));
         boolean removedStored = storedMessagesList.removeIf(m -> m.getMessageHash() != null && m.getMessageHash().equalsIgnoreCase(hash));
         return removed || removedStored;
     }
 
-    // 2f. Display a report that lists full details of all stored/sent messages
+    //  Display a report that lists full details of all stored/sent messages
     public static String displayFullReport() {
         loadStoredMessagesFromJson();
         List<Message> all = new ArrayList<>();
@@ -334,7 +334,7 @@ public class Message {
         return sb.toString();
     }
 
-    // Helper: Read messages.json back into storedMessagesList
+    // Read messages.json back into storedMessagesList
     public static void loadStoredMessagesFromJson() {
         try {
             java.io.File file = new java.io.File("messages.json");
@@ -358,7 +358,7 @@ public class Message {
                 }
             }
         } catch (Exception e) {
-            // Ignore if file is empty or formatting differs
+            // Ignore if file is empty or formatting difers
         }
     }
 
