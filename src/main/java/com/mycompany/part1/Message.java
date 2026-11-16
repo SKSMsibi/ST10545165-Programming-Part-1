@@ -20,7 +20,13 @@ public class Message {
     private String recipientCell;
     private String messageText;
     private String messageHash;
+    //private static List<Message> sentMessagesList = new ArrayList<>();
+    // --- PART 3 ARRAYS / LISTS ---
     private static List<Message> sentMessagesList = new ArrayList<>();
+    private static List<Message> disregardedMessagesList = new ArrayList<>();
+    private static List<Message> storedMessagesList = new ArrayList<>();
+    private static List<String> messageHashList = new ArrayList<>();
+    private static List<String> messageIDList = new ArrayList<>();
 
     // Optional: Default constructor
     public Message() {
@@ -211,4 +217,164 @@ public class Message {
             return false; // Failed to save
         }
     }
+    
+    // Helper to add messages based on action choice
+    public void classifyAndStore(int choice) {
+        if (choice == 1) {
+            sentMessagesList.add(this);
+            messageHashList.add(this.messageHash);
+            messageIDList.add(this.messageID);
+        } else if (choice == 2) {
+            disregardedMessagesList.add(this);
+        } else if (choice == 3) {
+            storedMessagesList.add(this);
+            messageHashList.add(this.messageHash);
+            messageIDList.add(this.messageID);
+            storeMessage();
+        }
+    }
+
+    // 2a. Display sender and recipient of all stored messages
+    public static String displayStoredSenderAndRecipient() {
+        loadStoredMessagesFromJson();
+        if (storedMessagesList.isEmpty()) {
+            return "No stored messages found.";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Message m : storedMessagesList) {
+            sb.append("Recipient: ").append(m.getRecipientCell())
+              .append(" | Message: ").append(m.getMessageText()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    // 2b. Display the longest stored message
+    public static String getLongestStoredMessage() {
+        loadStoredMessagesFromJson();
+        if (storedMessagesList.isEmpty()) {
+            // Also check general messages if JSON isn't loaded yet
+            List<Message> all = new ArrayList<>();
+            all.addAll(sentMessagesList);
+            all.addAll(storedMessagesList);
+            if (all.isEmpty()) return "No messages available.";
+            Message longest = all.get(0);
+            for (Message m : all) {
+                if (m.getMessageText() != null && m.getMessageText().length() > longest.getMessageText().length()) {
+                    longest = m;
+                }
+            }
+            return longest.getMessageText();
+        }
+        Message longest = storedMessagesList.get(0);
+        for (Message m : storedMessagesList) {
+            if (m.getMessageText() != null && m.getMessageText().length() > longest.getMessageText().length()) {
+                longest = m;
+            }
+        }
+        return longest.getMessageText();
+    }
+
+    // 2c. Search for a message ID and display corresponding recipient and message
+    public static String searchMessageID(String searchID) {
+        loadStoredMessagesFromJson();
+        List<Message> all = new ArrayList<>();
+        all.addAll(sentMessagesList);
+        all.addAll(storedMessagesList);
+        
+        for (Message m : all) {
+            if (m.getMessageID() != null && m.getMessageID().equals(searchID)) {
+                return "Recipient: " + m.getRecipientCell() + " | Message: " + m.getMessageText();
+            }
+        }
+        return "Message ID not found.";
+    }
+
+    // 2d. Search for all messages stored for a particular recipient
+    public static String searchByRecipient(String recipient) {
+        loadStoredMessagesFromJson();
+        List<Message> all = new ArrayList<>();
+        all.addAll(sentMessagesList);
+        all.addAll(storedMessagesList);
+        
+        StringBuilder sb = new StringBuilder();
+        boolean found = false;
+        for (Message m : all) {
+            if (m.getRecipientCell() != null && m.getRecipientCell().equals(recipient)) {
+                sb.append("\"").append(m.getMessageText()).append("\" ");
+                found = true;
+            }
+        }
+        return found ? sb.toString().trim() : "No messages found for this recipient.";
+    }
+
+    // 2e. Delete a message using the message hash
+    public static boolean deleteMessageByHash(String hash) {
+        boolean removed = sentMessagesList.removeIf(m -> m.getMessageHash() != null && m.getMessageHash().equalsIgnoreCase(hash));
+        boolean removedStored = storedMessagesList.removeIf(m -> m.getMessageHash() != null && m.getMessageHash().equalsIgnoreCase(hash));
+        return removed || removedStored;
+    }
+
+    // 2f. Display a report that lists full details of all stored/sent messages
+    public static String displayFullReport() {
+        loadStoredMessagesFromJson();
+        List<Message> all = new ArrayList<>();
+        all.addAll(sentMessagesList);
+        all.addAll(storedMessagesList);
+        
+        if (all.isEmpty()) return "No messages in report.";
+        
+        StringBuilder sb = new StringBuilder("=== MESSAGE REPORT ===\n");
+        for (int i = 0; i < all.size(); i++) {
+            Message m = all.get(i);
+            sb.append("Message ").append(i + 1).append(":\n")
+              .append("  Message Hash : ").append(m.getMessageHash()).append("\n")
+              .append("  Recipient    : ").append(m.getRecipientCell()).append("\n")
+              .append("  Message      : ").append(m.getMessageText()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    // Helper: Read messages.json back into storedMessagesList
+    public static void loadStoredMessagesFromJson() {
+        try {
+            java.io.File file = new java.io.File("messages.json");
+            if (!file.exists()) return;
+            
+            String content = new String(java.nio.file.Files.readAllBytes(file.toPath()));
+            // Simple parsing for POE structure
+            String[] blocks = content.split("},\\s*\\{");
+            for (String block : blocks) {
+                String id = extractJsonField(block, "MessageID");
+                String hash = extractJsonField(block, "MessageHash");
+                String recipient = extractJsonField(block, "Recipient");
+                String msgText = extractJsonField(block, "Message");
+                
+                if (id != null && !id.isEmpty()) {
+                    Message m = new Message(id, 0, recipient, msgText);
+                    m.messageHash = hash;
+                    if (!storedMessagesList.stream().anyMatch(existing -> existing.getMessageID().equals(id))) {
+                        storedMessagesList.add(m);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Ignore if file is empty or formatting differs
+        }
+    }
+
+    private static String extractJsonField(String jsonBlock, String fieldName) {
+        try {
+            String searchKey = "\"" + fieldName + "\": \"";
+            int start = jsonBlock.indexOf(searchKey);
+            if (start == -1) return "";
+            start += searchKey.length();
+            int end = jsonBlock.indexOf("\"", start);
+            return jsonBlock.substring(start, end);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+
+
 }
